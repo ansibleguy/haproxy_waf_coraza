@@ -1,0 +1,11 @@
+# {{ ansible_managed }}
+
+[Unit]
+Documentation=https://github.com/ansibleguy/haproxy_waf_coraza
+
+[Service]
+ExecStart=
+ExecStart={{ WAF_HC.path.file.bin }} -config={{ WAF_HC.path.cnf }}/{{ WAF_HC.path.file.cnf_spoa }}
+
+User={{ WAF_HC.user }}
+Group={{ WAF_HC.user }}

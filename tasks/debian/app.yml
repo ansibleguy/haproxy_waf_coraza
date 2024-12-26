@@ -1,0 +1,25 @@
+---
+
+- name: "HAProxy WAF | Apps | {{ waf_app_name }} | Create rules directory"
+  ansible.builtin.file:
+    path: "{{ waf_app_rules_dir }}"
+    state: directory
+    owner: 'root'
+    group: "{{ WAF_HC.user }}"
+    mode: 0750
+
+- name: "HAProxy WAF | Apps | {{ waf_app_name }} | Create main config"
+  ansible.builtin.template:
+    src: 'templates/etc/coraza/apps/tmpl/main.conf.j2'
+    dest: "{{ waf_app_rules_dir }}/main.conf"
+    owner: 'root'
+    group: "{{ WAF_HC.user }}"
+    mode: 0640
+
+- name: "HAProxy WAF | Apps | {{ waf_app_name }} | Create rule-setup config"
+  ansible.builtin.template:
+    src: 'templates/etc/coraza/apps/tmpl/@crs-setup.conf.j2'
+    dest: "{{ waf_app_rules_dir }}/@crs-setup.conf"
+    owner: 'root'
+    group: "{{ WAF_HC.user }}"
+    mode: 0640

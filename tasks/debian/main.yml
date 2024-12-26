@@ -1,0 +1,92 @@
+---
+
+- name: HAProxy WAF | Creating service user
+  ansible.builtin.user:
+    name: "{{ WAF_HC.user }}"
+    shell: '/usr/sbin/nologin'
+    comment: 'HAProxy WAF Serviceuser'
+
+- name: HAProxy WAF | Create directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: 'root'
+    group: "{{ WAF_HC.user }}"
+    mode: 0750
+  loop:
+    - "{{ WAF_HC.path.cnf }}"
+    - "{{ WAF_HC.path.log }}"
+
+- name: HAProxy WAF | Apps
+  ansible.builtin.include_tasks: debian/app.yml
+  vars:
+    waf_app_name: "{{ waf_app.name | safe_key }}"
+    waf_app_rules_dir: "{{ WAF_HC.path.cnf }}/{{ WAF_HC.path.dir.cnf_rules }}/{{ waf_app_name }}"
+  loop_control:
+    loop_var: waf_app
+  loop: "{{ WAF_CONFIG.apps }}"
+
+- name: HAProxy WAF | Checking if Binary exists
+  ansible.builtin.stat:
+    path: "{{ WAF_HC.path.file.bin }}"
+  register: waf_bin
+
+- name: HAProxy WAF | Fail if Binary is missing
+  ansible.builtin.fail:
+    msg: |
+      The WAF binary '{{  WAF_HC.path.file.bin }}' does not exist!
+      Either enable the 'waf.install_bin' setting..
+      or download the source-code from https://github.com/O-X-L/coraza-spoa and compile it yourself!
+  when:
+    - not WAF_CONFIG.install_bin | bool
+    - not waf_bin.stat.exists
+
+- name: HAProxy WAF | Download Binary
+  ansible.builtin.unarchive:
+    src: "{{ WAF_HC.url.bin }}"
+    dest: '/tmp/coraza'
+    remote_src: yes
+    extra_opts: ['--strip-components=1']
+    mode: 0750
+  when:
+    - WAF_CONFIG.install_bin | bool
+    - not waf_bin.stat.exists or force_update | bool
+
+- name: HAProxy WAF | Move Binary
+  ansible.builtin.copy:
+    src: "/tmp/coraza/{{ WAF_HC.path.file.bin_src }}"
+    remote_src: yes
+    dest: "{{ WAF_HC.path.file.bin }}"
+    owner: 'root'
+    group: "{{ WAF_HC.user }}"
+    mode: 0750
+  when:
+    - WAF_CONFIG.install_bin | bool
+    - not waf_bin.stat.exists or force_update | bool
+
+- name: HAProxy WAF | Create service-override directory
+  ansible.builtin.file:
+    path: '/etc/systemd/system/coraza-spoa.service.d/'
+    state: directory
+    mode: 0755
+
+- name: HAProxy WAF | Create service-override
+  ansible.builtin.template:
+    src: 'templates/etc/systemd/system/coraza-spoa.service.d/override.conf.j2'
+    dest: '/etc/systemd/system/coraza-spoa.service.d/override.conf'
+    mode: 0644
+  notify: 'daemon-reload'
+
+- name: HAProxy WAF | Create service
+  ansible.builtin.get_url:
+    url: "{{ WAF_HC.url.service }}"
+    dest: '/etc/systemd/system/coraza-spoa.service'
+    mode: 0644
+  notify: 'daemon-reload'
+
+- name: HAProxy WAF | Start & Enable Service
+  ansible.builtin.systemd:
+    daemon_reload: true
+    name: 'coraza-spoa.service'
+    state: started
+    enabled: true

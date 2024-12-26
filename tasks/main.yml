@@ -1,0 +1,11 @@
+---
+
+- name: HAProxy WAF | Checking config
+  ansible.builtin.assert:
+    that:
+      - waf is defined
+  tags: always
+
+- name: HAProxy WAF | Processing debian config
+  ansible.builtin.import_tasks: debian/main.yml
+  when: "ansible_distribution|lower in ['debian', 'ubuntu']"
