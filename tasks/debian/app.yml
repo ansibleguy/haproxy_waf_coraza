@@ -4,6 +4,7 @@
   ansible.builtin.file:
     path: "{{ waf_app_rules_default_dir }}"
     state: directory
+    mode: 0750
   register: waf_crs_dir
 
 - name: "HAProxy WAF | Apps | {{ waf_app_name }} | Download Core-Ruleset {{ waf_app.ruleset_version }}"
@@ -30,7 +31,8 @@
     creates: "{{ crs_dir }}"
   vars:
     crs_dir: "{{ waf_app_rules_dir }}/@owasp_crs"
-  notify: ['waf-restart', 'check-failed']
+  notify: ['WAF-restart', 'Check-failed']
+  tags: skip_ansible_lint  # command-instead-of-module
 
 # todo: rule-overrides
 
@@ -41,7 +43,7 @@
     owner: 'root'
     group: "{{ WAF_HC.user }}"
     mode: 0640
-  notify: ['waf-restart', 'check-failed']
+  notify: ['WAF-restart', 'Check-failed']
   tags: [rules]
 
 - name: "HAProxy WAF | Apps | {{ waf_app_name }} | Create rule-setup config"
@@ -51,5 +53,5 @@
     owner: 'root'
     group: "{{ WAF_HC.user }}"
     mode: 0640
-  notify: ['waf-restart', 'check-failed']
+  notify: ['WAF-restart', 'Check-failed']
   tags: [rules]

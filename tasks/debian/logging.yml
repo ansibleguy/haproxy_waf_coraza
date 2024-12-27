@@ -19,7 +19,7 @@
     src: "templates/etc/rsyslog.d/coraza-spoa.conf.j2"
     dest: '/etc/rsyslog.d/coraza-spoa.conf'
     mode: 0644
-  notify: ['rsyslog-restart']
+  notify: ['Rsyslog-restart']
   tags: ['apps']
 
 - name: HAProxy WAF | Logging | Logrotate Config
@@ -27,4 +27,4 @@
     src: "templates/etc/logrotate.d/coraza-spoa.j2"
     dest: '/etc/logrotate.d/coraza-spoa'
     mode: 0644
-  notify: ['logrotate-restart']
+  notify: ['Logrotate-restart']

@@ -1,25 +1,25 @@
 ---
 
-- name: daemon-reload
+- name: Daemon-reload
   ansible.builtin.systemd:
     daemon_reload: true
 
-- name: waf-restart
+- name: WAF-restart
   ansible.builtin.systemd:
     name: 'coraza-spoa.service'
     state: restarted
 
-- name: rsyslog-restart
+- name: Rsyslog-restart
   ansible.builtin.systemd:
     name: 'rsyslog.service'
     state: restarted
 
-- name: logrotate-restart
+- name: Logrotate-restart
   ansible.builtin.systemd:
     name: 'logrotate.service'
     state: restarted
 
-- name: check-failed
+- name: Check-failed
   ansible.builtin.command: 'systemctl is-failed coraza-spoa.service'
   register: svc_check
   failed_when: not svc_check.failed

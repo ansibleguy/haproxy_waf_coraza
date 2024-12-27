@@ -66,6 +66,10 @@ waf:
 
     - name: 'be_app1'
       block: true
+
+    - name: 'be_app2'
+      block: true
+      response_check: true
 ```
 
 Then you will need to include the SPOE-backend: `/etc/haproxy/waf-coraza.cfg`
@@ -76,12 +80,16 @@ And target the SPOE-agents in your HAProxy config: (or use the role [ansibleguy/
 
 ### Result
 
-**Config-Directory**:
 ```bash
 tree /etc/coraza-spoa -L 4
 > /etc/coraza-spoa
 > ├── apps
 > │   ├── be_app1
+> │   │   └── v4.7.0
+> │   │       ├── @crs-setup.conf
+> │   │       ├── main.conf
+> │   │       └── @owasp_crs
+> │   ├── be_app2
 > │   │   └── v4.7.0
 > │   │       ├── @crs-setup.conf
 > │   │       ├── main.conf
