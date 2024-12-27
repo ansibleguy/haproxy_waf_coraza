@@ -1,3 +1,3 @@
 ---
 
-WAF_CONFIG: "{{ defaults_waf | combine(waf, recursive=true, list_merge='prepend') }}"
+WAF_CONFIG: "{{ defaults_waf | combine(waf, recursive=true) }}"
