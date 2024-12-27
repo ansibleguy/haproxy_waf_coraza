@@ -6,7 +6,7 @@
     state: directory
     owner: "{{ WAF_HC.user }}"
     group: "{{ WAF_HC.user }}"
-    mode: 0750
+    mode: 0755
 
 - name: HAProxy WAF | Logging | Syslog
   ansible.builtin.apt:

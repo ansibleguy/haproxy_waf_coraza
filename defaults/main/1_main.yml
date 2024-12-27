@@ -1,9 +1,9 @@
 ---
 
 force_update: false
+only_app: ''
 
 defaults_app:
-  response_check: false
   block: false  # SecRuleEngine
 
   log:
@@ -86,6 +86,7 @@ defaults_waf:
   #   compile the binary yourself
   install_bin: true
   release: '2025-01'  # github.com/O-X-L/coraza-spoa (branch 'oxl')
+  response_check: false
 
   port: 9000
   log:
@@ -96,11 +97,9 @@ defaults_waf:
     poll_interval_sec: 1
     rotate_days: 7
 
-  haproxy_config:
-    backend: '/etc/haproxy/waf-coraza.cfg'
-    spoe: '/etc/haproxy/waf-coraza-spoe.cfg'
+  haproxy_be_config: '/etc/haproxy/waf-coraza.cfg'
 
-  spoe:
+  spoa:
     var_prefix: 'coraza'
     timeout:
       hello: '2s'

@@ -1,32 +1,27 @@
 # {{ ansible_managed }}
 # ansibleguy.haproxy_waf_coraza
 
-{% for user_app in WAF_CONFIG.apps %}
-{%   set app = defaults_app | combine(user_app, recursive=true) %}
-{%   set name = app.name | safe_key %}
-[coraza_waf_{{ name }}]
-spoe-agent coraza_waf_{{ name }}_agent
-{%   if app.response_check | bool %}
-    messages    coraza_waf_{{ name }}_req     coraza_waf_{{ name }}_res
-{%   else %}
-    messages    coraza_waf_{{ name }}_req
-{%   endif %}
-    option      var-prefix      {{ WAF_CONFIG.spoe.var_prefix }}
+[coraza]
+spoe-agent coraza-agent
+{% if WAF_CONFIG.response_check | bool %}
+    messages    coraza-req     coraza-res
+{% else %}
+    messages    coraza-req
+{% endif %}
+    option      var-prefix      {{ WAF_CONFIG.spoa.var_prefix }}
     option      set-on-error    error
-    timeout     hello           {{ WAF_CONFIG.spoe.timeout.hello }}
-    timeout     idle            {{ WAF_CONFIG.spoe.timeout.idle }}
-    timeout     processing      {{ WAF_CONFIG.spoe.timeout.processing }}
+    timeout     hello           {{ WAF_CONFIG.spoa.timeout.hello }}
+    timeout     idle            {{ WAF_CONFIG.spoa.timeout.idle }}
+    timeout     processing      {{ WAF_CONFIG.spoa.timeout.processing }}
     use-backend coraza-waf-spoa
     log         global
 
-spoe-message coraza_waf_{{ name }}_req
-    args app=str({{ name }}) src-ip=src src-port=src_port dst-ip=dst dst-port=dst_port method=method path=path query=query version=req.ver headers=req.hdrs body=req.body
-    event on-frontend-http-request
+spoe-message coraza-req
+    args app=var({{ WAF_HC.app_var }}) src-ip=src src-port=src_port dst-ip=dst dst-port=dst_port method=method path=path query=query version=req.ver headers=req.hdrs body=req.body
+    event on-backend-http-request
 
-{%   if app.response_check | bool %}
-spoe-message coraza_waf_{{ name }}_res
-   args app=str({{ name }}) id=var(txn.coraza.id) version=res.ver status=status headers=res.hdrs body=res.body
+{% if WAF_CONFIG.response_check | bool %}
+spoe-message coraza-res
+   args app=var({{ WAF_HC.app_var }}) id=var(txn.coraza.id) version=res.ver status=status headers=res.hdrs body=res.body
    event on-http-response
-{%   endif %}
-
-{% endfor %}
+{% endif %}

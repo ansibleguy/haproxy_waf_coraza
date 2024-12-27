@@ -19,7 +19,7 @@ applications:
       Include {{ path_rules }}/@crs-setup.conf
       Include {{ path_rules }}/@owasp_crs/*.conf
 
-    response_check: {{ 'true' if app.response_check | bool else 'false' }}
+    response_check: {{ 'true' if WAF_CONFIG.response_check | bool else 'false' }}
     transaction_ttl_ms: {{ app.transaction_ttl_sec * 1000 }}
 
     log_level: '{{ app.log.level }}'

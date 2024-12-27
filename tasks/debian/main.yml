@@ -19,13 +19,13 @@
 
 - name: HAProxy WAF | HAProxy Config
   ansible.builtin.template:
-    src: "templates/etc/haproxy/{{ item.s }}"
+    src: "templates/etc/haproxy/{{ item.s }}.j2"
     dest: "{{ item.d }}"
     mode: 0644
-  with_items:
-    - {s: 'waf-coraza.cfg.j2', d: "{{ WAF_CONFIG.haproxy_config.backend }}"}
-    - {s: 'waf-coraza-spoe.cfg.j2', d: "{{ WAF_CONFIG.haproxy_config.spoe }}"}
   tags: [config, apps]
+  with_items:
+    - {s: 'waf-coraza.cfg', d: "{{ WAF_CONFIG.haproxy_be_config }}"}
+    - {s: 'waf-coraza-spoe.cfg', d: '/etc/haproxy/waf-coraza-spoe.cfg'}
 
 - name: HAProxy WAF | SPOA Config
   ansible.builtin.template:
@@ -52,6 +52,9 @@
   args:
     apply:
       tags: [apps]
+  when: >
+    only_app | default(none, true) is none or
+    (only_app == waf_app.name or only_app in waf_app.name or waf_app.name in only_app)
 
 - name: HAProxy WAF | Install
   ansible.builtin.import_tasks: debian/install.yml

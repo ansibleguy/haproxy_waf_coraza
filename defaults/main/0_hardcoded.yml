@@ -15,6 +15,8 @@ WAF_HC:
     dir:
       cnf_rules: 'apps'
 
+  app_var: 'txn.waf_app'
+
   url:
     service: 'https://raw.githubusercontent.com/O-X-L/coraza-spoa/refs/heads/oxl/contrib/coraza-spoa.service'
     # src: 'https://github.com/O-X-L/coraza-spoa/archive/refs/heads/oxl.zip'

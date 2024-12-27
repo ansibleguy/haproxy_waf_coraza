@@ -66,30 +66,27 @@ waf:
 
     - name: 'be_app1'
       block: true
-
-    - name: 'be_app2'
-      block: true
-      response_check: true
 ```
 
 Then you will need to include the SPOE-backend: `/etc/haproxy/waf-coraza.cfg`
 
 And target the SPOE-agents in your HAProxy config: (or use the role [ansibleguy/infra_haproxy](https://github.com/ansibleguy/infra_haproxy) with `haproxy.waf.coraza.enable=true`)
 
-`filter spoe engine coraza_waf_<APP-NAME> config /etc/haproxy/waf-coraza.cfg if <YOUR-CONDITION>`
+```
+http-request set-var(txn.waf_app) str(app1) if { req.hdr(host) -i -m str ansibleguy.net test.ansibleguy.net }
+
+# fallback app
+http-request set-var(txn.waf_app) str(default) if !{ var(txn.waf_app) -m found }
+
+filter spoe engine coraza config /etc/haproxy/waf-coraza-spoe.cfg
+```
 
 ### Result
 
 ```bash
 tree /etc/coraza-spoa -L 4
-> /etc/coraza-spoa
 > ├── apps
 > │   ├── be_app1
-> │   │   └── v4.7.0
-> │   │       ├── @crs-setup.conf
-> │   │       ├── main.conf
-> │   │       └── @owasp_crs
-> │   ├── be_app2
 > │   │   └── v4.7.0
 > │   │       ├── @crs-setup.conf
 > │   │       ├── main.conf
@@ -113,12 +110,9 @@ tree /etc/coraza-spoa -L 4
 # haproxy spoe agents: /etc/haproxy/waf-coraza-spoe.cfg
 
 cat /etc/haproxy/waf-coraza-spoe.cfg 
-> # Ansible managed
-> # ansibleguy.haproxy_waf_coraza
-> 
-> [coraza_waf_default]
-> spoe-agent coraza_waf_default_agent
->     messages    coraza_waf_default_req
+> [coraza]
+> spoe-agent coraza-agent
+>     messages    coraza-req
 >     option      var-prefix      coraza
 >     option      set-on-error    error
 >     timeout     hello           2s
@@ -127,13 +121,33 @@ cat /etc/haproxy/waf-coraza-spoe.cfg
 >     use-backend coraza-waf-spoa
 >     log         global
 > 
-> spoe-message coraza_waf_default_req
->     args app=str(default) src-ip=src src-port=src_port dst-ip=dst dst-port=dst_port method=method path=path query=query version=req.ver headers=req.hdrs body=req.body
->     event on-frontend-http-request
+> spoe-message coraza-req
+>     args app=var(txn.waf_app) src-ip=src src-port=src_port dst-ip=dst dst-port=dst_port method=method path=path query=query version=req.ver headers=req.hdrs body=req.body
+>     event on-backend-http-request
+
+cat /etc/coraza-spoa/spoa.yml 
+> ---
+> bind: '127.0.0.1:9000'
 > 
+> log_file: '/dev/stdout'
+> log_level: 'info'
+> log_format: 'json'
 > 
-> [coraza_waf_default_block]
-> ...
+> applications:
+>   - name: 'default'
+>     directives: |
+>       Include /etc/coraza-spoa/apps/default/v4.7.0/main.conf
+>       Include /etc/coraza-spoa/apps/default/v4.7.0/@crs-setup.conf
+>       Include /etc/coraza-spoa/apps/default/v4.7.0/@owasp_crs/*.conf
+> 
+>     response_check: false
+>     transaction_ttl_ms: 60000
+> 
+>     log_level: 'info'
+>     log_file: '/var/log/coraza-spoa/default.log'
+>     log_format: 'json'
+>
+>   ...
 ```
 
 
@@ -180,12 +194,6 @@ cat /etc/haproxy/waf-coraza-spoe.cfg
 
 
 * **Info:** You need to configure the WAF-Applications yourself if HAProxy is not managed by the [ansibleguy/infra_haproxy](https://github.com/ansibleguy/infra_haproxy) Ansible-role (after setting `haproxy.waf.coraza.enable=true`)!
-
-  You can do so by adding this line to the config:
-
-  ```
-  filter spoe engine coraza_waf_<APP-NAME> config /etc/haproxy/waf-coraza.cfg if <YOUR-CONDITION>
-  ```
 
 
 ----
