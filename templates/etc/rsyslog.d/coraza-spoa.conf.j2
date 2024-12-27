@@ -1,6 +1,6 @@
 module(load="imfile" PollingInterval="{{ WAF_CONFIG.log.poll_interval_sec }}")
 
-{% for user_app in WAF_CONFIG.apps %}
+{% for user_app in WAF_CONFIG.apps | unique_apps %}
 {%   set app = defaults_app | combine(user_app, recursive=true) %}
 {%   set name = app.name | safe_key %}
 input(

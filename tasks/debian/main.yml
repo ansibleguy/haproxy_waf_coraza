@@ -46,7 +46,7 @@
     waf_app_rules_default_dir: "{{ WAF_HC.path.cnf }}/{{ WAF_HC.path.dir.cnf_rules }}/_tmpl/{{ waf_app.ruleset_version }}"
   loop_control:
     loop_var: waf_app_user
-  loop: "{{ WAF_CONFIG.apps }}"
+  loop: "{{ WAF_CONFIG.apps | unique_apps }}"
   no_log: true
   tags: [config, rules, apps]
   args:
@@ -63,3 +63,5 @@
 - name: HAProxy WAF | Logging
   ansible.builtin.import_tasks: debian/logging.yml
   tags: [logs]
+
+# todo: cleanup non-existent/orphaned apps
