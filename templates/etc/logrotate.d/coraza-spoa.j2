@@ -1,0 +1,12 @@
+{{ WAF_HC.path.log }}/*.log {
+    daily
+    rotate {{ WAF_CONFIG.log.rotate_days }}
+    missingok
+    notifempty
+    compress
+    delaycompress
+    postrotate
+        [ ! -x /usr/lib/rsyslog/rsyslog-rotate ] || /usr/lib/rsyslog/rsyslog-rotate
+        /usr/bin/systemctl restart coraza-spoa.service
+    endscript
+}

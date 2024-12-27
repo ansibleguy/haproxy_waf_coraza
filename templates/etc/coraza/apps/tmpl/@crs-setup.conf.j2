@@ -1,6 +1,7 @@
 # {{ ansible_managed }}
+# ansibleguy.haproxy_waf_coraza
 
-{% for s in app.crs_setup %}
+{% for s in waf_app.crs_setup %}
 {{ s }}
 
 {% endfor %}

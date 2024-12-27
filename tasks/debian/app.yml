@@ -1,5 +1,20 @@
 ---
 
+- name: "HAProxy WAF | Apps | {{ waf_app_name }} | Check Core-Ruleset {{ waf_app.ruleset_version }}"
+  ansible.builtin.file:
+    path: "{{ waf_app_rules_default_dir }}"
+    state: directory
+  register: waf_crs_dir
+
+- name: "HAProxy WAF | Apps | {{ waf_app_name }} | Download Core-Ruleset {{ waf_app.ruleset_version }}"
+  ansible.builtin.unarchive:
+    src: "{{ WAF_HC.url.crs_1 }}{{ waf_app.ruleset_version }}{{ WAF_HC.url.crs_2 }}"
+    dest: "{{ waf_app_rules_default_dir }}"
+    remote_src: true
+    extra_opts: ['--strip-components=1']
+    mode: 0750
+  when: waf_crs_dir.changed
+
 - name: "HAProxy WAF | Apps | {{ waf_app_name }} | Create rules directory"
   ansible.builtin.file:
     path: "{{ waf_app_rules_dir }}"
@@ -8,6 +23,17 @@
     group: "{{ WAF_HC.user }}"
     mode: 0750
 
+- name: "HAProxy WAF | Apps | {{ waf_app_name }} | Add rules {{ waf_app.ruleset_version }}"
+  ansible.builtin.command: |
+    cp -r {{ waf_app_rules_default_dir }}/rules/@owasp_crs {{ crs_dir }}
+  args:
+    creates: "{{ crs_dir }}"
+  vars:
+    crs_dir: "{{ waf_app_rules_dir }}/@owasp_crs"
+  notify: ['waf-restart', 'check-failed']
+
+# todo: rule-overrides
+
 - name: "HAProxy WAF | Apps | {{ waf_app_name }} | Create main config"
   ansible.builtin.template:
     src: 'templates/etc/coraza/apps/tmpl/main.conf.j2'
@@ -15,6 +41,8 @@
     owner: 'root'
     group: "{{ WAF_HC.user }}"
     mode: 0640
+  notify: ['waf-restart', 'check-failed']
+  tags: [rules]
 
 - name: "HAProxy WAF | Apps | {{ waf_app_name }} | Create rule-setup config"
   ansible.builtin.template:
@@ -23,3 +51,5 @@
     owner: 'root'
     group: "{{ WAF_HC.user }}"
     mode: 0640
+  notify: ['waf-restart', 'check-failed']
+  tags: [rules]

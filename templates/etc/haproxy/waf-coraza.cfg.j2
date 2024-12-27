@@ -1,0 +1,6 @@
+# {{ ansible_managed }}
+# ansibleguy.haproxy_waf_coraza
+
+backend coraza-waf-spoa
+    mode tcp
+    server coraza-waf 127.0.0.1:{{ WAF_CONFIG.port }} check

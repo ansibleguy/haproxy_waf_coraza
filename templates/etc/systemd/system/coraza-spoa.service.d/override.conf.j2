@@ -1,7 +1,12 @@
 # {{ ansible_managed }}
+# ansibleguy.haproxy_waf_coraza
 
 [Unit]
+Documentation=https://github.com/corazawaf/coraza-spoa
+Documentation=https://github.com/corazawaf/coraza
+Documentation=https://coraza.io/docs/seclang/directives/
 Documentation=https://github.com/ansibleguy/haproxy_waf_coraza
+Documentation=https://docs.o-x-l.com/waf/coraza.html
 
 [Service]
 ExecStart=
@@ -9,3 +14,9 @@ ExecStart={{ WAF_HC.path.file.bin }} -config={{ WAF_HC.path.cnf }}/{{ WAF_HC.pat
 
 User={{ WAF_HC.user }}
 Group={{ WAF_HC.user }}
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=coraza-spoa
+Restart=on-failure
+RestartSec=5s

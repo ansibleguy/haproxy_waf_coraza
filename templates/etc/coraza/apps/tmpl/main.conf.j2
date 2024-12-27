@@ -1,6 +1,11 @@
 # {{ ansible_managed }}
+# ansibleguy.haproxy_waf_coraza
 
-{% for s in app.crs_main %}
+{% if 'SecRuleEngine' not in waf_app.crs_main | join('') %}
+SecRuleEngine {{ 'On' if waf_app.block | bool else 'DetectionOnly' }}
+{% endif %}
+
+{% for s in waf_app.crs_main %}
 {{ s }}
 
 {% endfor %}

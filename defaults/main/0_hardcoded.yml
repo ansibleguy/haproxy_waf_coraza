@@ -5,10 +5,10 @@ arch: "{{ 'amd64' if ansible_architecture == 'x86_64' else ansible_architecture 
 WAF_HC:
   user: 'coraza'
   path:
-    cnf: '/etc/coraza'
-    log: '/var/log/coraza'
+    cnf: '/etc/coraza-spoa'
+    log: '/var/log/coraza-spoa'
     file:
-      bin: '/usr/local/bin/coraza-spoa'
+      bin: '/usr/bin/coraza-spoa'
       bin_src: "coraza-spoa-linux-{{ arch }}"
       cnf_main: 'main.conf'
       cnf_spoa: 'spoa.yml'
@@ -16,6 +16,8 @@ WAF_HC:
       cnf_rules: 'apps'
 
   url:
-    service: 'https://raw.githubusercontent.com/corazawaf/coraza-spoa/refs/heads/main/contrib/coraza-spoa.service'
+    service: 'https://raw.githubusercontent.com/O-X-L/coraza-spoa/refs/heads/oxl/contrib/coraza-spoa.service'
     # src: 'https://github.com/O-X-L/coraza-spoa/archive/refs/heads/oxl.zip'
     bin: "https://github.com/O-X-L/coraza-spoa/releases/download/{{ WAF_CONFIG.release }}/coraza-spoa-linux-{{ arch }}.tar.gz"
+    crs_1: 'https://github.com/corazawaf/coraza-coreruleset/archive/refs/tags/'
+    crs_2: '.tar.gz'

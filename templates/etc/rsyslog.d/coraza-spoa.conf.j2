@@ -1,0 +1,11 @@
+module(load="imfile" PollingInterval="{{ WAF_CONFIG.log.poll_interval_sec }}")
+
+{% for user_app in WAF_CONFIG.apps %}
+{%   set app = defaults_app | combine(user_app, recursive=true) %}
+{%   set name = app.name | safe_key %}
+input(
+  type="imfile"
+  File="{{ WAF_HC.path.log }}/{{ name }}.log"
+  Tag="{{ WAF_CONFIG.log.syslog_prefix }}{{ name }}"
+)
+{% endfor %}

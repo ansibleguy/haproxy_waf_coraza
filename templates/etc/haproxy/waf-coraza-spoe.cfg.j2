@@ -1,0 +1,32 @@
+# {{ ansible_managed }}
+# ansibleguy.haproxy_waf_coraza
+
+{% for user_app in WAF_CONFIG.apps %}
+{%   set app = defaults_app | combine(user_app, recursive=true) %}
+{%   set name = app.name | safe_key %}
+[coraza_waf_{{ name }}]
+spoe-agent coraza_waf_{{ name }}_agent
+{%   if app.response_check | bool %}
+    messages    coraza_waf_{{ name }}_req     coraza_waf_{{ name }}_res
+{%   else %}
+    messages    coraza_waf_{{ name }}_req
+{%   endif %}
+    option      var-prefix      {{ WAF_CONFIG.spoe.var_prefix }}
+    option      set-on-error    error
+    timeout     hello           {{ WAF_CONFIG.spoe.timeout.hello }}
+    timeout     idle            {{ WAF_CONFIG.spoe.timeout.idle }}
+    timeout     processing      {{ WAF_CONFIG.spoe.timeout.processing }}
+    use-backend coraza-waf-spoa
+    log         global
+
+spoe-message coraza_waf_{{ name }}_req
+    args app=str({{ name }}) src-ip=src src-port=src_port dst-ip=dst dst-port=dst_port method=method path=path query=query version=req.ver headers=req.hdrs body=req.body
+    event on-frontend-http-request
+
+{%   if app.response_check | bool %}
+spoe-message coraza_waf_{{ name }}_res
+   args app=str({{ name }}) id=var(txn.coraza.id) version=res.ver status=status headers=res.hdrs body=res.body
+   event on-http-response
+{%   endif %}
+
+{% endfor %}

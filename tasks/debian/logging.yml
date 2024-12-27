@@ -1,0 +1,30 @@
+---
+
+- name: HAProxy WAF | Create log-directory
+  ansible.builtin.file:
+    path: "{{ WAF_HC.path.log }}"
+    state: directory
+    owner: "{{ WAF_HC.user }}"
+    group: "{{ WAF_HC.user }}"
+    mode: 0750
+
+- name: HAProxy WAF | Logging | Syslog
+  ansible.builtin.apt:
+    pkg: ['rsyslog', 'logrotate']
+    state: present
+    update_cache: true
+
+- name: HAProxy WAF | Logging | Rsyslog Config
+  ansible.builtin.template:
+    src: "templates/etc/rsyslog.d/coraza-spoa.conf.j2"
+    dest: '/etc/rsyslog.d/coraza-spoa.conf'
+    mode: 0644
+  notify: ['rsyslog-restart']
+  tags: ['apps']
+
+- name: HAProxy WAF | Logging | Logrotate Config
+  ansible.builtin.template:
+    src: "templates/etc/logrotate.d/coraza-spoa.j2"
+    dest: '/etc/logrotate.d/coraza-spoa'
+    mode: 0644
+  notify: ['logrotate-restart']

@@ -57,22 +57,77 @@ ansible-galaxy install ansibleguy.haproxy_waf_coraza --roles-path ./roles
 
 ```yaml
 waf:
-  ...
+  apps:
+    - name: 'default'
+      block: false
+
+    - name: 'default_block'
+      block: true
+
+    - name: 'be_app1'
+      block: true
 ```
 
-----
+Then you will need to include the SPOE-backend: `/etc/haproxy/waf-coraza.cfg`
 
-Define the config as needed:
+And target the SPOE-agents in your HAProxy config:
 
-```yaml
-waf:
-  ...
-```
+`filter spoe engine coraza_waf_<APP-NAME> config /etc/haproxy/waf-coraza.cfg if <YOUR-CONDITION>`
 
-You might want to use 'ansible-vault' to encrypt your passwords:
+### Result
+
+**Config-Directory**:
 ```bash
-ansible-vault encrypt_string
+tree /etc/coraza-spoa -L 4
+> /etc/coraza-spoa
+> ├── apps
+> │   ├── be_app1
+> │   │   └── v4.7.0
+> │   │       ├── @crs-setup.conf
+> │   │       ├── main.conf
+> │   │       └── @owasp_crs
+> │   ├── default
+> │   │   └── v4.7.0
+> │   │       ├── @crs-setup.conf
+> │   │       ├── main.conf
+> │   │       └── @owasp_crs
+> │   ├── default_block
+> │   │   └── v4.7.0
+> │   │       ├── @crs-setup.conf
+> │   │       ├── main.conf
+> │   │       └── @owasp_crs
+> │   └── _tmpl
+> │       └── v4.7.0
+> │           └── ...
+> └── spoa.yml
+
+# haproxy spoe backend: /etc/haproxy/waf-coraza.cfg
+# haproxy spoe agents: /etc/haproxy/waf-coraza-spoe.cfg
+
+cat /etc/haproxy/waf-coraza-spoe.cfg 
+> # Ansible managed
+> # ansibleguy.haproxy_waf_coraza
+> 
+> [coraza_waf_default]
+> spoe-agent coraza_waf_default_agent
+>     messages    coraza_waf_default_req
+>     option      var-prefix      coraza
+>     option      set-on-error    error
+>     timeout     hello           2s
+>     timeout     idle            2m
+>     timeout     processing      500ms
+>     use-backend coraza-waf-spoa
+>     log         global
+> 
+> spoe-message coraza_waf_default_req
+>     args app=str(default) src-ip=src src-port=src_port dst-ip=dst dst-port=dst_port method=method path=path query=query version=req.ver headers=req.hdrs body=req.body
+>     event on-frontend-http-request
+> 
+> 
+> [coraza_waf_default_block]
+> ...
 ```
+
 
 ----
 
@@ -80,11 +135,18 @@ ansible-vault encrypt_string
 
 * **Package installation**
   * Downloading WAF-Binary
+  * Rsyslog & Logrotate if `log.syslog` is enabled
 
 * **Configuration**
 
   * **Default config**:
-    * ...
+    * WAF Configuration at: `/etc/coraza-spoa`
+      * Application-Specific rulesets: `/etc/coraza-spoa/apps/<app>/<version>/`
+      * [Coraza Core-Ruleset](https://github.com/corazawaf/coraza-coreruleset)
+      * [Easy-to-manage Config](https://coraza.io/docs/seclang/directives/)
+      * App-specific rule-overrides
+    * App-Specific Log-File at `/var/log/coraza-spoa`
+      * Log-File => Syslog with App-Specific Tags
 
 
   * **Default opt-ins**:
@@ -109,7 +171,13 @@ ansible-vault encrypt_string
 * **Warning:** Not every setting/variable you provide will be checked for validity. Bad config might break the role!
 
 
-* **Info:** ...
+* **Info:** You need to configure the WAF-Applications yourself if HAProxy is not managed by the [ansibleguy/infra_haproxy]() Ansible-role!
+
+  You can do so by adding this line to the config:
+
+  ```
+  filter spoe engine coraza_waf_<APP-NAME> config /etc/haproxy/waf-coraza.cfg if <YOUR-CONDITION>
+  ```
 
 
 ----
@@ -120,6 +188,13 @@ Run the playbook:
 ```bash
 ansible-playbook -K -D -i inventory/hosts.yml playbook.yml
 ```
+
+There are also some useful **tags** available:
+* install
+* logs
+* apps => add or update an app
+* config => only update config
+* rules => only update rules
 
 To debug errors - you can set the 'debug' variable at runtime:
 ```bash
