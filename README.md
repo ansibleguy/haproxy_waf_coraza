@@ -4,7 +4,7 @@
 
 # Ansible Role - Coraza WAF HAProxy Integration (SPOA)
 
-Role to deploy the [Coraza WAF HAProxy SPOA-integration](https://github.com/corazawaf/coraza-spoa) with its [Core-Ruleset](https://github.com/corazawaf/coraza-coreruleset).
+Role to deploy the [Coraza WAF (OWASP)](https://coraza.io/) [HAProxy SPOA-integration](https://github.com/corazawaf/coraza-spoa) with its [Core-Ruleset](https://github.com/corazawaf/coraza-coreruleset).
 
 We focus on the HAProxy community-edition as the enterprise-edition already has a built-in WAF!
 
@@ -70,7 +70,7 @@ waf:
 
 Then you will need to include the SPOE-backend: `/etc/haproxy/waf-coraza.cfg`
 
-And target the SPOE-agents in your HAProxy config:
+And target the SPOE-agents in your HAProxy config: (or use the role [ansibleguy/infra_haproxy](https://github.com/ansibleguy/infra_haproxy) with `haproxy.waf.coraza.enable=true`)
 
 `filter spoe engine coraza_waf_<APP-NAME> config /etc/haproxy/waf-coraza.cfg if <YOUR-CONDITION>`
 
@@ -165,13 +165,13 @@ cat /etc/haproxy/waf-coraza-spoe.cfg
 
 * **Note:** Most of the role's functionality can be opted in or out.
 
-  For all available options - see the default-config located in [the main defaults-file](https://github.com/ansibleguy/infra_haproxy/blob/latest/defaults/main/1_main.yml)!
+  For all available options - see the default-config located in [the main defaults-file](https://github.com/ansibleguy/haproxy_waf_coraza/blob/latest/defaults/main/1_main.yml)!
 
 
 * **Warning:** Not every setting/variable you provide will be checked for validity. Bad config might break the role!
 
 
-* **Info:** You need to configure the WAF-Applications yourself if HAProxy is not managed by the [ansibleguy/infra_haproxy]() Ansible-role!
+* **Info:** You need to configure the WAF-Applications yourself if HAProxy is not managed by the [ansibleguy/infra_haproxy](https://github.com/ansibleguy/infra_haproxy) Ansible-role (after setting `haproxy.waf.coraza.enable=true`)!
 
   You can do so by adding this line to the config:
 
