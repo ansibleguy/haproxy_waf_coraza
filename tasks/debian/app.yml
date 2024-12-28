@@ -25,8 +25,9 @@
     mode: 0750
 
 - name: "HAProxy WAF | Apps | {{ waf_app_name }} | Add rules {{ waf_app.ruleset_version }}"
-  ansible.builtin.command: |
-    cp -r {{ waf_app_rules_default_dir }}/rules/@owasp_crs {{ crs_dir }}
+  ansible.builtin.shell: |
+    cp -r {{ waf_app_rules_default_dir }}/rules/@owasp_crs {{ crs_dir }} &&
+    chown -R root:{{ WAF_HC.user }} {{ crs_dir }}
   args:
     creates: "{{ crs_dir }}"
   vars:

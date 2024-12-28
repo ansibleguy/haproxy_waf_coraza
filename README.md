@@ -79,6 +79,7 @@ http-request set-var(txn.waf_app) str(app1) if { req.hdr(host) -i -m str ansible
 http-request set-var(txn.waf_app) str(default) if !{ var(txn.waf_app) -m found }
 
 filter spoe engine coraza config /etc/haproxy/waf-coraza-spoe.cfg
+http-request send-spoe-group coraza coraza-req
 ```
 
 ### Result

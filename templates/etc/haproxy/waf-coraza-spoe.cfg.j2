@@ -8,6 +8,7 @@ spoe-agent coraza-agent
 {% else %}
     messages    coraza-req
 {% endif %}
+    groups      coraza-req
     option      var-prefix      {{ WAF_CONFIG.spoa.var_prefix }}
     option      set-on-error    error
     timeout     hello           {{ WAF_CONFIG.spoa.timeout.hello }}
@@ -18,7 +19,9 @@ spoe-agent coraza-agent
 
 spoe-message coraza-req
     args app=var({{ WAF_HC.app_var }}) src-ip=src src-port=src_port dst-ip=dst dst-port=dst_port method=method path=path query=query version=req.ver headers=req.hdrs body=req.body
-    event on-backend-http-request
+
+spoe-group coraza-req
+    messages coraza-req
 
 {% if WAF_CONFIG.response_check | bool %}
 spoe-message coraza-res
