@@ -26,16 +26,35 @@
 
 - name: "HAProxy WAF | Apps | {{ waf_app_name }} | Add rules {{ waf_app.ruleset_version }}"
   ansible.builtin.shell: |
-    cp -r {{ waf_app_rules_default_dir }}/rules/@owasp_crs {{ crs_dir }} &&
-    chown -R root:{{ WAF_HC.user }} {{ crs_dir }}
+    cp -r {{ waf_app_rules_default_dir }}/rules/@owasp_crs {{ waf_app_crs_dir }} &&
+    chown -R root:{{ WAF_HC.user }} {{ waf_app_crs_dir }}
   args:
-    creates: "{{ crs_dir }}"
-  vars:
-    crs_dir: "{{ waf_app_rules_dir }}/@owasp_crs"
+    creates: "{{ waf_app_crs_dir }}"
   notify: ['WAF-restart', 'Check-failed']
   tags: skip_ansible_lint  # command-instead-of-module
 
-# todo: rule-overrides
+- name: "HAProxy WAF | Apps | {{ waf_app_name }} | Update Variables"
+  ansible.builtin.lineinfile:
+    path: "{{ waf_app_rules_dir }}/@owasp_crs/REQUEST-901-INITIALIZATION.conf"
+    regexp: "^(.*)setvar:'{{ item.key }}=(.*)'(.*)$"
+    line: "\\1setvar:'{{ item.key }}={{ item.value }}'\\3"
+    backrefs: true
+  with_dict: "{{ waf_app.rules.vars }}"
+  tags: [rules]
+
+- name: "HAProxy WAF | Apps | {{ waf_app_name }} | Rule Changes"
+  ansible.builtin.include_tasks: debian/app_rule_changes.yml
+  vars:
+    rule_file: "{{ waf_app_crs_dir }}/{{ rule_change_item.key }}"
+    rule_file_cnf: "{{ rule_change_item.value }}"
+  loop_control:
+    loop_var: rule_change_item
+  with_dict: "{{ waf_app.rules.rule_changes }}"
+  no_log: true  # less output
+  tags: [rules, apps]
+  args:
+    apply:
+      tags: [rules, apps]
 
 - name: "HAProxy WAF | Apps | {{ waf_app_name }} | Create main config"
   ansible.builtin.template:

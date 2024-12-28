@@ -1,0 +1,48 @@
+---
+
+- name: "HAProxy WAF | Apps | {{ waf_app_name }} | Disable Rule-File"
+  ansible.builtin.shell: |
+    if [ -f '{{ rule_file }}' ]
+    then
+      mv '{{ rule_file }}' '{{ rule_file }}.disabled'
+      echo '1'
+    else
+      echo '0'
+    fi
+  args:
+    executable: '/bin/bash'
+  register: waf_app_rule_file_dis
+  changed_when: waf_app_rule_file_dis.stdout != '0'
+  when:
+    - rule_file_cnf | is_boolean
+    - not rule_file_cnf | bool
+  notify: ['WAF-restart', 'Check-failed']
+
+- name: "HAProxy WAF | Apps | {{ waf_app_name }} | Enable Rule-File"
+  ansible.builtin.shell: |
+    if [ -f '{{ rule_file }}.disabled' ]
+    then
+      mv '{{ rule_file }}.disabled' '{{ rule_file }}'
+      echo '1'
+    else
+      echo '0'
+    fi
+  args:
+    executable: '/bin/bash'
+  register: waf_app_rule_file_en
+  changed_when: waf_app_rule_file_en.stdout != '0'
+  when:
+    - rule_file_cnf | is_boolean
+    - rule_file_cnf | bool
+  notify: ['WAF-restart', 'Check-failed']
+
+- name: "HAProxy WAF | Apps | {{ waf_app_name }} | Rule State-Changes"
+  ansible.builtin.include_tasks: debian/app_rule_changes_state.yml
+  vars:
+    ansible_check_mode2: "{{ ansible_check_mode | bool }}"
+  no_log: true  # less output
+  tags: [rules, apps]
+  args:
+    apply:
+      tags: [rules, apps]
+  when: not rule_file_cnf | is_boolean

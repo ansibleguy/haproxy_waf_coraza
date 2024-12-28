@@ -7,6 +7,7 @@ WAF_HC:
   path:
     cnf: '/etc/coraza-spoa'
     log: '/var/log/coraza-spoa'
+    rule_script: '/usr/local/bin/waf_coraza_rule_update.py'
     file:
       bin: '/usr/bin/coraza-spoa'
       bin_src: "coraza-spoa-linux-{{ arch }}"

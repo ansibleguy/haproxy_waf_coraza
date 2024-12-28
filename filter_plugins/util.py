@@ -7,6 +7,7 @@ class FilterModule(object):
         return {
             'safe_key': self.safe_key,
             'unique_apps': self.unique_apps,
+            'is_boolean': self.is_boolean,
         }
 
     @staticmethod
@@ -26,3 +27,7 @@ class FilterModule(object):
                 pass
 
         return apps
+
+    @staticmethod
+    def is_boolean(value: any) -> bool:
+        return isinstance(value, bool)

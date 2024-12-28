@@ -37,17 +37,26 @@
   notify: ['WAF-restart', 'Check-failed']
   tags: [config, apps]
 
+- name: HAProxy WAF | Rule Update-Script
+  ansible.builtin.copy:
+    src: "files/{{ WAF_HC.path.rule_script }}"
+    dest: "{{ WAF_HC.path.rule_script }}"
+    mode: 0750
+  tags: [rules]
+  check_mode: false
+
 - name: HAProxy WAF | Apps
   ansible.builtin.include_tasks: debian/app.yml
   vars:
     waf_app: "{{ defaults_app | combine(waf_app_user, recursive=true) }}"
     waf_app_name: "{{ waf_app.name | safe_key }}"
     waf_app_rules_dir: "{{ WAF_HC.path.cnf }}/{{ WAF_HC.path.dir.cnf_rules }}/{{ waf_app_name }}/{{ waf_app.ruleset_version }}"
+    waf_app_crs_dir: "{{ waf_app_rules_dir }}/@owasp_crs"
     waf_app_rules_default_dir: "{{ WAF_HC.path.cnf }}/{{ WAF_HC.path.dir.cnf_rules }}/_tmpl/{{ waf_app.ruleset_version }}"
   loop_control:
     loop_var: waf_app_user
   loop: "{{ WAF_CONFIG.apps | unique_apps }}"
-  no_log: true
+  no_log: true  # less output
   tags: [config, rules, apps]
   args:
     apply:

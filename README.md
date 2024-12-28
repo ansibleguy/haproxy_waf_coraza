@@ -51,9 +51,15 @@ ansible-galaxy install ansibleguy.haproxy_waf_coraza --roles-path ./roles
 
 ## Usage
 
+### Example
+
+Here some detailed config example and its results:
+
+* [Example](https://github.com/ansibleguy/haproxy_waf_coraza/blob/latest/Example.md)
+
 ### Config
 
-**Minimal example**
+**Example**
 
 ```yaml
 waf:
@@ -66,7 +72,37 @@ waf:
 
     - name: 'be_app1'
       block: true
+
+      rules:
+        # override vars inside CoreRuleset config REQUEST-901-INITIALIZATION.conf
+        vars:
+          tx.allowed_methods: 'GET HEAD POST PUT OPTIONS'
+
+        rule_changes:
+          # disable PHP-checks
+          'REQUEST-933-APPLICATION-ATTACK-PHP.conf': false
+
+          # re-enable it
+          # 'REQUEST-933-APPLICATION-ATTACK-PHP.conf': true
+
+          # change/update single rules
+          'REQUEST-944-APPLICATION-ATTACK-JAVA.conf':
+            # disable (comment-out) single rule
+            944100: false
+
+            # re-enable it
+            # 944100: true
+                        
+            # replace a rule with custom content
+            944140: |
+              SecRule ... \
+                  "id:944140, ..."
+
 ```
+
+----
+
+### HAProxy Integration
 
 Then you will need to include the SPOE-backend: `/etc/haproxy/waf-coraza.cfg`
 
@@ -238,6 +274,12 @@ There are also some useful **tags** available:
 * apps => add or update an app
 * config => only update config
 * rules => only update rules
+
+You can also use the `only_app` runtime-variable to only provision one WAF-App:
+
+```bash
+ansible-playbook ... -e only_app=app1 --tags rules
+```
 
 To debug errors - you can set the 'debug' variable at runtime:
 ```bash

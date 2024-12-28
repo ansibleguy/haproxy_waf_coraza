@@ -4,6 +4,8 @@
   ansible.builtin.assert:
     that:
       - waf is defined
+      - waf.apps is defined
+      - waf.apps | length > 0
   tags: always
 
 - name: HAProxy WAF | Processing debian config
