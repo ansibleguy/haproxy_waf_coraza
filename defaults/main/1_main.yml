@@ -94,7 +94,7 @@ defaults_app:
     #
     #    # replace single rule
     #    944110: |
-    #      SecRule ARGS|ARGS_NAMES|REQUEST_COOKIES|!REQUEST_COOKIES:/__utm/|REQUEST_COOKIES_NAMES|REQUEST_BODY|REQUEST_HEADERS|XML:/*|XML://@* "@rx (?:runtime|processbuilder)" \
+    #      SecRule ARGS|ARGS_NAMES|...|XML:/*|XML://@* "@rx (?:runtime|processbuilder)" \
     #          "id:944110,\
     #          ...
 
