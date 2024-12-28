@@ -24,3 +24,4 @@
   register: svc_check
   failed_when: not svc_check.failed
   changed_when: false
+  tags: skip_ansible_lint  # command-instead-of-module
