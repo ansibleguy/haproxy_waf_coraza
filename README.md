@@ -62,7 +62,7 @@ ansible-galaxy install ansibleguy.haproxy_waf_coraza --roles-path ./roles
 
 ### Example
 
-Here some detailed config example and its results:
+Here you can find a detailed config example and its results:
 
 * [Example](https://github.com/ansibleguy/haproxy_waf_coraza/blob/latest/Example.md)
 
