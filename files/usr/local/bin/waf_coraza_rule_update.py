@@ -22,6 +22,7 @@ def _error(msg: str):
     sys_exit(1)
 
 
+# pylint: disable=E0606,R0912
 def main():
     if not Path(args.rule_file).is_file():
         _error('File not found')
