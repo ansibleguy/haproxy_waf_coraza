@@ -82,6 +82,32 @@ filter spoe engine coraza config /etc/haproxy/waf-coraza-spoe.cfg
 http-request send-spoe-group coraza coraza-req
 ```
 
+To log related information in HAProxy: (*after the send-spoe-group line*)
+
+```
+http-request capture var(txn.waf_app) len 50
+http-request capture var(txn.coraza.id) len 16
+http-request capture var(txn.coraza.error) len 1
+http-request capture var(txn.coraza.action) len 8
+```
+
+And then perform the result-actions:
+
+```
+# deny or silent-drop:
+http-request deny status 403 if { var(txn.coraza.action) -m str deny }
+http-response deny status 403 if { var(txn.coraza.action) -m str deny }
+
+http-request silent-drop if { var(txn.coraza.action) -m str drop }
+http-response silent-drop if { var(txn.coraza.action) -m str drop }
+
+# optional - redirect:
+http-request redirect code 302 location %[var(txn.coraza.data)] if { var(txn.coraza.action) -m str redirect }
+http-response redirect code 302 location %[var(txn.coraza.data)] if { var(txn.coraza.action) -m str redirect }
+```
+
+----
+
 ### Result
 
 ```bash
