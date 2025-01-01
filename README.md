@@ -85,7 +85,7 @@ waf:
       rules:
         # override vars inside CoreRuleset config REQUEST-901-INITIALIZATION.conf
         vars:
-          tx.allowed_methods: 'GET HEAD POST PUT OPTIONS'
+          tx.allowed_methods: 'GET HEAD POST PUT DELETE OPTIONS'
 
         rule_changes:
           # disable PHP-checks

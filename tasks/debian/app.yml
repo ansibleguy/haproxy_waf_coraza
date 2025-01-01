@@ -45,6 +45,7 @@
 - name: "HAProxy WAF | Apps | {{ waf_app_name }} | Rule Changes"
   ansible.builtin.include_tasks: debian/app_rule_changes.yml
   vars:
+    rule_file_name: "{{ rule_change_item.key.split('.') | first }}"
     rule_file: "{{ waf_app_crs_dir }}/{{ rule_change_item.key }}"
     rule_file_cnf: "{{ rule_change_item.value }}"
   loop_control:

@@ -1,6 +1,6 @@
 ---
 
-- name: "HAProxy WAF | Apps | {{ waf_app_name }} | Disable Rules"
+- name: "HAProxy WAF | Apps | {{ waf_app_name }} | Disable Rules in {{ rule_file_name }}"
   ansible.builtin.command: |
     python3 {{ WAF_HC.path.rule_script }} -s disable -f {{ rule_file }} -i {{ rule_id }}
     {% if ansible_check_mode %}-c true{% endif %}
@@ -18,7 +18,7 @@
   check_mode: false
   notify: ['WAF-restart', 'Check-failed']
 
-- name: "HAProxy WAF | Apps | {{ waf_app_name }} | Enable Rules"
+- name: "HAProxy WAF | Apps | {{ waf_app_name }} | Enable Rules in {{ rule_file_name }}"
   ansible.builtin.command: |
     python3 {{ WAF_HC.path.rule_script }} -s enable -f {{ rule_file }} -i {{ rule_id }}
     {% if ansible_check_mode %}-c true{% endif %}
@@ -36,7 +36,7 @@
   check_mode: false
   notify: ['WAF-restart', 'Check-failed']
 
-- name: "HAProxy WAF | Apps | {{ waf_app_name }} | Replace Rules"
+- name: "HAProxy WAF | Apps | {{ waf_app_name }} | Replace Rules in {{ rule_file_name }}"
   ansible.builtin.command: |
     python3 {{ WAF_HC.path.rule_script }} -s replace -f {{ rule_file }} -i {{ rule_id }} -r {{ rule_cnf }}
     {% if ansible_check_mode %}-c true{% endif %}

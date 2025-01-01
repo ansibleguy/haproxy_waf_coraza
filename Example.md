@@ -16,7 +16,7 @@ waf:
       block: true
       rules:
         vars:
-          tx.allowed_methods: 'GET HEAD POST PUT OPTIONS'
+          tx.allowed_methods: 'GET HEAD POST PUT DELETE OPTIONS'
 
         rule_changes:
           'REQUEST-933-APPLICATION-ATTACK-PHP.conf': false

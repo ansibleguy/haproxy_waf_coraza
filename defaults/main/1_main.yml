@@ -82,7 +82,7 @@ defaults_app:
 
     # see: REQUEST-901-INITIALIZATION.conf
     vars: {}
-    #  tx.allowed_methods: 'GET HEAD POST PUT OPTIONS'
+    #  tx.allowed_methods: 'GET HEAD POST PUT DELETE OPTIONS'
 
     rule_changes: {}
     #  # disable whole rule-file
